@@ -5,27 +5,158 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Hệ thống bình chọn điện tử - VKSND Khu vực 9 An Giang</title>
 <style>
+  * { box-sizing: border-box; }
+
   html, body {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background: #0b3d91;
+    background: #eef2f8;
+    font-family: 'Be Vietnam Pro', 'Segoe UI', Arial, Helvetica, sans-serif;
   }
+
   iframe {
     display: block;
+    position: fixed;
+    inset: 0;
     width: 100%;
     height: 100%;
     border: 0;
+    opacity: 0;
+    transition: opacity .5s ease;
+  }
+
+  iframe.da-tai {
+    opacity: 1;
+  }
+
+  /* Màn hình chờ - giống trang chủ (logo/icon + tên hệ thống), hiện ngay
+     lập tức trong lúc Apps Script đang khởi động (có thể mất vài giây
+     ở lần tải đầu), tự ẩn đi khi trang thật bên trong iframe tải xong. */
+  #manHinhCho {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #eef2f8;
+    transition: opacity .5s ease;
+  }
+
+  #manHinhCho.an {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .cho-icon {
+    font-size: 72px;
+    line-height: 1;
+    margin-bottom: 14px;
+    animation: choTrenNoi 3.2s ease-in-out infinite;
+  }
+
+  @keyframes choTrenNoi {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .cho-ten {
+    font-size: 19px;
+    font-weight: 700;
+    color: #0a3d73;
+    text-align: center;
+    padding: 0 24px;
+    margin-bottom: 6px;
+    line-height: 1.35;
+  }
+
+  .cho-mota {
+    font-size: 13px;
+    color: #6c757d;
+    text-align: center;
+    padding: 0 24px;
+    margin-bottom: 30px;
+  }
+
+  .cho-vong {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 4px solid rgba(20,135,216,.2);
+    border-top-color: #1487d8;
+    animation: choXoay .8s linear infinite;
+  }
+
+  @keyframes choXoay {
+    to { transform: rotate(360deg); }
+  }
+
+  .cho-ghi-chu {
+    position: absolute;
+    bottom: 26px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 12px;
+    color: #9aa5b1;
+    padding: 0 24px;
+    opacity: 0;
+    transition: opacity .4s ease;
+  }
+
+  .cho-ghi-chu.hien {
+    opacity: 1;
   }
 </style>
 </head>
 <body>
+
+  <div id="manHinhCho">
+    <div class="cho-icon">🗳️</div>
+    <div class="cho-ten">VIỆN KIỂM SÁT NHÂN DÂN KHU VỰC 9 - AN GIANG</div>
+    <div class="cho-mota">Hệ thống bình chọn điện tử</div>
+    <div class="cho-vong"></div>
+    <div class="cho-ghi-chu" id="ghiChuCho">Đang tải, vui lòng chờ trong giây lát...</div>
+  </div>
+
   <iframe
+    id="khungChinh"
     src="https://script.google.com/macros/s/AKfycbxxoy9FNjrREYqwEZHISward_m2vHmNgce-XXPi9x2WYolwmxxdqrwg3IcSqEtqnFim/exec"
     allow="clipboard-write"
     referrerpolicy="no-referrer-when-downgrade">
   </iframe>
+
+  <script>
+    var oKhung = document.getElementById('khungChinh');
+    var oManHinhCho = document.getElementById('manHinhCho');
+    var oGhiChu = document.getElementById('ghiChuCho');
+    var daAn = false;
+
+    function anManHinhCho() {
+      if (daAn) return;
+      daAn = true;
+      oKhung.classList.add('da-tai');
+      oManHinhCho.classList.add('an');
+      setTimeout(function () { oManHinhCho.style.display = 'none'; }, 600);
+    }
+
+    // Trang trong iframe tải xong -> chuyển sang hiển thị luôn.
+    oKhung.addEventListener('load', anManHinhCho);
+
+    // Nếu tải hơi lâu (khởi động nguội của Apps Script), hiện thêm ghi chú.
+    setTimeout(function () {
+      if (!daAn) oGhiChu.classList.add('hien');
+    }, 4000);
+
+    // Phòng trường hợp iframe kẹt/không bắn sự kiện load (mất mạng, lỗi...):
+    // vẫn tự chuyển sang sau một khoảng thời gian tối đa để không kẹt màn
+    // hình chờ mãi mãi.
+    setTimeout(anManHinhCho, 20000);
+  </script>
+
 </body>
 </html>
